@@ -33,7 +33,7 @@ async def get_paper_recommendations(topic: str) -> List[str]:
         model="Llama-3.2-90B-Vision-Instruct",
         messages=[
             {"role": "system", "content": "You are a helpful research assistant that provides a list of research papers."},
-            {"role": "user", "content": f"Can you provide a list of 20 research papers that led to the foundation of the topic '{topic}'? The core paper related to this topic should be the last. Return only the title of the paper inside double inverted commas. Do not repeat the papers"}
+            {"role": "user", "content": f"Can you provide a list of 15 research papers that led to the foundation of the topic '{topic}'? The core paper related to this topic should be the last. Return only the title of the paper inside double inverted commas. Do not repeat the papers"}
         ],
         temperature=0.1,
         top_p=0.1

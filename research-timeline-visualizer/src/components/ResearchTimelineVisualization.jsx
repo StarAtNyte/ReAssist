@@ -1,3 +1,4 @@
+//ResearchTimelineVisualization.jsx
 import React, { useMemo } from 'react';
 import { ExternalLink, Calendar, Users, BookOpen, ArrowUpRight } from 'lucide-react';
 
