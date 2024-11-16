@@ -1,9 +1,16 @@
 {
   "dependencies": {
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
+    "openai": "^4.72.0",
     "react-beautiful-dnd": "^13.1.1",
     "react-date-picker": "^11.0.0",
     "react-date-range": "^2.0.1",
-    "react-datepicker": "^7.5.0"
+    "react-datepicker": "^7.5.0",
+    "tailwind-merge": "^2.5.4"
+  },
+  "devDependencies": {
+    "shadcn-ui": "^0.9.3"
   }
 }

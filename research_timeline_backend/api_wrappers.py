@@ -1,3 +1,4 @@
+#api_wrappers.py
 import os
 import openai
 import requests
@@ -5,9 +6,10 @@ import re
 from typing import List
 from models import Paper
 import getpass
+from dotenv import load_dotenv
 
-# Set up SambaNova API key and OpenAI client
-os.environ["SAMBANOVA_API_KEY"] = "f158e69e-a896-4eed-bb5a-d528a12f5ec2"
+load_dotenv()
+
 if not os.getenv("SAMBANOVA_API_KEY"):
     os.environ["SAMBANOVA_API_KEY"] = getpass.getpass("Enter your SambaNova Cloud API key: ")
 

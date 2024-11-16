@@ -3,8 +3,9 @@ import { MessageSquare, Send, Loader2 } from 'lucide-react';
 import { Card } from './ui/card';
 import { ScrollArea } from './ui/scroll-area';
 import { Button } from './ui/Button';
+import { Alert, AlertDescription } from './ui/alert';
 
-const ChatSidebar = ({ onPaperSelect }) => {
+const ChatSidebar = () => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -18,6 +19,32 @@ const ChatSidebar = ({ onPaperSelect }) => {
     scrollToBottom();
   }, [messages]);
 
+  const getChatResponse = async (messageHistory, userMessage) => {
+    try {
+      const response = await fetch('http://localhost:8000/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          messages: [...messageHistory, userMessage]
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Failed to get AI response');
+      }
+
+      const data = await response.json();
+      return data.response;
+    } catch (error) {
+      console.error('Error calling chat API:', error);
+      throw error;
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!input.trim()) return;
@@ -28,19 +55,16 @@ const ChatSidebar = ({ onPaperSelect }) => {
     setIsLoading(true);
 
     try {
-      const papers = await getPaperRecommendations(input);
-      
-      const assistantMessage = {
-        role: 'assistant',
-        content: 'Here are some relevant papers:',
-        papers: papers
-      };
-      
-      setMessages(prev => [...prev, assistantMessage]);
-    } catch (error) {
+      const aiResponse = await getChatResponse(messages, userMessage);
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: 'Sorry, I encountered an error while searching for papers. Please try again.'
+        content: aiResponse
+      }]);
+    } catch (error) {
+      console.error('Error:', error);
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: "I apologize, but I'm having trouble connecting. Please try again later."
       }]);
     } finally {
       setIsLoading(false);
@@ -52,36 +76,28 @@ const ChatSidebar = ({ onPaperSelect }) => {
     
     return (
       <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`}>
-        <div className={`max-w-[80%] ${isUser ? 'bg-blue-600 text-white' : 'bg-gray-100'} rounded-lg p-3`}>
-          <p>{message.content}</p>
-          {message.papers && (
-            <div className="mt-2 space-y-2">
-              {message.papers.map((paper, index) => (
-                <Button 
-                  key={index}
-                  variant="outline"
-                  size="sm"
-                  className="w-full text-left justify-start"
-                  onClick={() => onPaperSelect(paper)}
-                >
-                  {paper}
-                </Button>
-              ))}
-            </div>
-          )}
+        <div className={`max-w-[85%] ${isUser ? 'bg-blue-600 text-white' : 'bg-gray-100'} rounded-lg p-3`}>
+          <p className="text-sm whitespace-pre-wrap">{message.content}</p>
         </div>
       </div>
     );
   };
 
   return (
-    <Card className="fixed right-0 top-0 h-screen w-80 flex flex-col border-l">
+    <Card className="h-full flex flex-col">
       <div className="p-4 border-b flex items-center gap-2">
         <MessageSquare className="w-5 h-5" />
-        <h2 className="font-semibold">Research Assistant</h2>
+        <h2 className="font-semibold">Chat Assistant</h2>
       </div>
       
       <ScrollArea className="flex-1 p-4">
+        {messages.length === 0 && (
+          <Alert variant="default" className="mb-4">
+            <AlertDescription className="text-sm text-gray-600">
+              Hello! I'm here to help answer your questions. Feel free to ask me anything!
+            </AlertDescription>
+          </Alert>
+        )}
         {messages.map((message, index) => (
           <Message key={index} message={message} />
         ))}
@@ -94,7 +110,7 @@ const ChatSidebar = ({ onPaperSelect }) => {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask about a research topic..."
+            placeholder="Type a message..."
             className="flex-1 p-2 border rounded-md"
             disabled={isLoading}
           />
@@ -113,22 +129,6 @@ const ChatSidebar = ({ onPaperSelect }) => {
       </form>
     </Card>
   );
-};
-
-const getPaperRecommendations = async (topic) => {
-  const response = await fetch('/api/papers', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ topic }),
-  });
-  
-  if (!response.ok) {
-    throw new Error('Failed to fetch paper recommendations');
-  }
-  
-  return response.json();
 };
 
 export default ChatSidebar;
