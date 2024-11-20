@@ -67,7 +67,7 @@ const ChatSidebar = ({ papers }) => {
 
     setIsAnalyzing(true);
     const analysisPrompts = {
-      figures: `Analyze the figures and diagrams in the paper "${selectedPaper.title}"`,
+      overview: `Generate a detailed general overview of the paper "${selectedPaper.title}"`,
       findings: `Summarize the key findings from the paper "${selectedPaper.title}"`,
       visualize: `Create a visual explanation of the main concepts in "${selectedPaper.title}"`
     };

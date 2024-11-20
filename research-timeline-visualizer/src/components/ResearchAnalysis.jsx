@@ -1,3 +1,4 @@
+//ResearchAnalysis.jsx
 import React, { useState } from 'react';
 import ResearchTimelineVisualization from './ResearchTimelineVisualization';
 import ChatSidebar from './ChatSidebar';

@@ -1,6 +1,5 @@
-// AnalysisTools.jsx
 import React from 'react';
-import { FileImage, TrendingUp, LineChart } from 'lucide-react';
+import { BookOpen, TrendingUp, LineChart } from 'lucide-react';
 import { Button } from './ui/Button';
 
 const AnalysisTools = ({ onAnalyzeClick, isAnalyzing }) => {
@@ -9,12 +8,12 @@ const AnalysisTools = ({ onAnalyzeClick, isAnalyzing }) => {
       <Button
         variant="outline"
         size="sm"
-        onClick={() => onAnalyzeClick('figures')}
+        onClick={() => onAnalyzeClick('overview')}
         disabled={isAnalyzing}
         className="flex items-center gap-1"
       >
-        <FileImage className="w-4 h-4" />
-        <span>Analyze Figures</span>
+        <BookOpen className="w-4 h-4" />
+        <span className="text-xs">Overview</span>
       </Button>
       <Button
         variant="outline"
@@ -24,7 +23,7 @@ const AnalysisTools = ({ onAnalyzeClick, isAnalyzing }) => {
         className="flex items-center gap-1"
       >
         <TrendingUp className="w-4 h-4" />
-        <span>Summarize Findings</span>
+        <span className="text-xs">Summarize Findings</span>
       </Button>
       <Button
         variant="outline"
@@ -34,11 +33,10 @@ const AnalysisTools = ({ onAnalyzeClick, isAnalyzing }) => {
         className="flex items-center gap-1"
       >
         <LineChart className="w-4 h-4" />
-        <span>Create Visualization</span>
+        <span className="text-xs">Visual Summary</span>
       </Button>
     </div>
   );
 };
-
 
 export default AnalysisTools;

@@ -2,15 +2,17 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Button } from './components/ui/Button';
-import { MessageSquare, ChevronLeft, ChevronRight } from 'lucide-react';
 import SearchBar from './components/Search/SearchBar';
 import ResearchTimelineVisualization from './components/ResearchTimelineVisualization';
 import ErrorAlert from './components/ErrorAlert/ErrorAlert';
 import Sidebar from './components/Sidebar';
 import ChatSidebar from './components/ChatSidebar';
+import { MessageSquare, BookOpen, TrendingUp, ChevronRight } from 'lucide-react';
+import PredictiveResearchIntelligence from './components/PredictiveResearchIntelligence';
 
 function App() {
   const [query, setQuery] = useState('');
+  const [activeTab, setActiveTab] = useState('timeline'); 
   const [papers, setPapers] = useState([]);
   const [filteredPapers, setFilteredPapers] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -32,24 +34,14 @@ function App() {
   const [isChatExpanded, setIsChatExpanded] = useState(false);
   const [showInsights, setShowInsights] = useState(false);
 
-  const toggleSidebar = () => {
+  const toggleChat = () => {
+    setIsChatOpen((prev) => !prev);
     if (isChatExpanded) {
       setIsChatExpanded(false);
     }
-    setIsSidebarOpen((prev) => !prev);
-  };
-
-  const toggleChat = () => {
-    if (!isChatOpen) {
-      setIsChatExpanded(false);
-    }
-    setIsChatOpen((prev) => !prev);
   };
 
   const toggleChatExpanded = () => {
-    if (!isChatExpanded) {
-      setIsSidebarOpen(false);
-    }
     setIsChatExpanded((prev) => !prev);
   };
 
@@ -165,7 +157,6 @@ function App() {
       setPapers(processedPapers);
       setTotalResults(response.data.total_results);
       setLastSuccessfulSearch(query);
-      setShowInsights(true);
  
     } catch (err) {
       let errorMessage = 'An error occurred while searching';
@@ -186,32 +177,6 @@ function App() {
     }
   };
 
-  const handleFilterChange = (filterName, value) => {
-    setFilters((prevFilters) => ({
-      ...prevFilters,
-      [filterName]: value,
-    }));
-  };
-
-  const handleSortChange = (sortBy) => {
-    setSortBy(sortBy);
-    const sortedPapers = sortPapers(filteredPapers, sortBy);
-    setFilteredPapers(sortedPapers);
-  };
-
-  const handleResetFilters = () => {
-    setFilters({
-      startDate: '',
-      endDate: '',
-      author: '',
-      journal: '',
-      keywords: '',
-      citationCount: '',
-    });
-    setFilteredPapers(papers);
-    setSortBy('');
-  };
-
   useEffect(() => {
     const filtered = applyFilters(papers, filters);
     const sorted = sortPapers(filtered, sortBy);
@@ -220,54 +185,38 @@ function App() {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      {/* Left Sidebar */}
-      <aside
-        className={`fixed left-0 top-0 h-screen w-[280px] border-r bg-white z-10 transition-transform duration-300 ${
-          !isSidebarOpen ? '-translate-x-full' : 'translate-x-0'
+      {/* Main Content */}
+      <main 
+        className={`flex-1 p-6 transition-all duration-300 ease-in-out ${
+          isChatOpen ? (isChatExpanded ? 'mr-[600px]' : 'mr-[320px]') : 'mr-0'
         }`}
       >
-        <Sidebar
-          onFilterChange={handleFilterChange}
-          filters={filters}
-          onSort={handleSortChange}
-          onResetFilters={handleResetFilters}
-          sortBy={sortBy}
-        />
-      </aside>
-
-      {/* Show Left Sidebar Button */}
-      {!isSidebarOpen && (
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={toggleSidebar}
-          className="fixed left-4 top-1/2 -translate-y-1/2 transform shadow-md hover:bg-gray-100 z-20"
-        >
-          <ChevronRight className="h-6 w-6" />
-        </Button>
-      )}
-
-      {/* Main Content */}
-      <main
-        className={`flex-1 p-6 transition-all duration-300 ease-in-out ${
-          isSidebarOpen ? 'ml-[280px]' : 'ml-0'
-        } ${isChatOpen ? (isChatExpanded ? 'mr-[600px]' : 'mr-[320px]') : 'mr-0'}`}
-      >
         <div className="mb-8">
-        <div className="flex justify-between items-center mb-4">
-            <h1 className="text-2xl font-bold">ReAssist</h1>
-            <div className="flex space-x-2">
-              <Button
-                variant="outline"
-                onClick={() => setShowInsights(!showInsights)}
-                className="flex items-center gap-2"
-              >
-                {showInsights ? 'Hide Insights' : 'Show Insights'}
-              </Button>
+          <div className="flex justify-between items-center mb-4">
+            <div className="flex items-center space-x-4">
+              <div className="bg-blue-500 text-white p-2 rounded-lg shadow-md">
+                <BookOpen className="h-6 w-6" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-extrabold text-gray-800 tracking-tight">
+                  Re<span className="text-blue-500">Assist</span>
+                </h1>
+                <p className="text-sm text-gray-500 mt-1">
+                  Research Intelligence Companion
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center bg-gray-100 rounded-full px-4 py-2 space-x-2">
+                <TrendingUp className="h-5 w-5 text-green-600" />
+                <span className="text-sm font-medium text-gray-700">
+                  {totalResults} Research Papers
+                </span>
+              </div>
               <Button
                 variant="outline"
                 onClick={toggleChat}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 hover:bg-blue-50 hover:text-blue-600"
               >
                 <MessageSquare className="w-4 h-4" />
                 {isChatOpen ? 'Hide Chat' : 'Show Chat'}
@@ -283,14 +232,44 @@ function App() {
           <ErrorAlert error={error} />
         </div>
 
-        {/* Conditional Rendering of Insights Generator */}
-       
+        <div className="flex space-x-4 mb-4">
+          <button
+            className={`px-4 py-2 rounded-lg transition-colors ${
+              activeTab === 'timeline' 
+                ? 'bg-blue-500 text-white' 
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+            onClick={() => setActiveTab('timeline')}
+          >
+            Research Timeline
+          </button>
+          <button
+            className={`px-4 py-2 rounded-lg transition-colors ${
+              activeTab === 'predictive' 
+                ? 'bg-blue-500 text-white' 
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+            onClick={() => setActiveTab('predictive')}
+          >
+            Predictive Research Intelligence
+          </button>
+        </div>
 
-        {filteredPapers.length > 0 && (
-          <ResearchTimelineVisualization 
-            papers={filteredPapers} 
-            searchQuery={query}
-          />
+        {/* Conditional Rendering Based on Active Tab */}
+        {activeTab === 'timeline' && filteredPapers.length > 0 && (
+          <>
+            <hr className="my-4 border-t border-gray-300" />
+            <ResearchTimelineVisualization 
+              papers={filteredPapers} 
+              searchQuery={query}
+            />
+          </>
+        )}
+        {activeTab === 'predictive' && (
+          <PredictiveResearchIntelligence 
+          papers={filteredPapers} 
+          query={query}
+        />
         )}
 
         {totalResults > 0 && (
@@ -304,7 +283,7 @@ function App() {
       <aside
         className={`fixed right-0 top-0 h-screen bg-white transform transition-all duration-300 ease-in-out ${
           !isChatOpen ? 'translate-x-full' : 'translate-x-0'
-        } ${isChatExpanded ? 'w-[600px]' : 'w-[320px]'} border-l z-10`}
+        } ${isChatExpanded ? 'w-[600px]' : 'w-[338px]'} border-l z-10`}
       >
         <div className="relative h-full">
           {isChatExpanded && (
@@ -321,8 +300,8 @@ function App() {
             className="h-full cursor-pointer" 
             onClick={!isChatExpanded ? toggleChatExpanded : undefined}
           >
-          <ChatSidebar papers={filteredPapers} />
-      </div>
+            <ChatSidebar papers={filteredPapers} />
+          </div>
         </div>
       </aside>
     </div>
