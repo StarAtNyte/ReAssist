@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 
 class Paper(BaseModel):
     title: str
@@ -14,3 +14,7 @@ class TimelineResponse(BaseModel):
     total_results: int
     page: int
     page_size: int
+
+class ChatRequest(BaseModel):
+    messages: List[str]
+    context: Optional[Dict[str, Any]] = None

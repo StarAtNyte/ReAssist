@@ -1,18 +1,23 @@
-import * as React from "react"
+import React from 'react'
+import { cn } from "../../lib/utils"
 
-const ScrollArea = React.forwardRef(({ className, children, ...props }, ref) => {
-  return (
-    <div
-      ref={ref}
-      className={`relative overflow-auto ${className}`}
-      {...props}
-    >
-      <div className="h-full w-full">
-        {children}
-      </div>
-    </div>
-  )
-})
-ScrollArea.displayName = "ScrollArea"
+const ScrollArea = React.forwardRef(({ 
+  className, 
+  children, 
+  ...props 
+}, ref) => (
+  <div 
+    ref={ref} 
+    className={cn(
+      "overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100", 
+      className
+    )} 
+    {...props}
+  >
+    {children}
+  </div>
+))
+
+ScrollArea.displayName = 'ScrollArea'
 
 export { ScrollArea }
