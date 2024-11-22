@@ -4,6 +4,11 @@ ReAssist is an advanced research assistant platform that helps researchers explo
 
 ![image](https://github.com/user-attachments/assets/a0473baa-8c42-4b93-b899-5eac134e179f)
 
+![1](https://github.com/user-attachments/assets/5e01ffc1-769a-4a92-a1a0-57b297be18a6)
+![2](https://github.com/user-attachments/assets/6bfc0c30-7f1f-4586-89a6-556cbfdf1c26)
+
+![3](https://github.com/user-attachments/assets/7adb94b8-a5b7-487e-94b9-a93c2ae01614)
+
 ## Features
 
 - **Smart Paper Recommendations**: Get tailored research paper recommendations based on your queries
