@@ -20,6 +20,7 @@
     "react-datepicker": "^7.5.0",
     "react-force-graph": "^1.44.7",
     "react-markdown": "^9.0.1",
+    "react-vis-network-graph": "^3.0.1",
     "reactflow": "^11.11.4"
   },
   "devDependencies": {

@@ -1,4 +1,3 @@
-// components/ui/progress.jsx
 import * as React from "react";
 import * as ProgressPrimitive from "@radix-ui/react-progress";
 import { cn } from "../../lib/utils";
@@ -21,4 +20,4 @@ const Progress = React.forwardRef(({ className, value, ...props }, ref) => (
 
 Progress.displayName = "Progress";
 
-export { Progress };  // Changed to named export
+export { Progress }; 

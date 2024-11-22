@@ -15,7 +15,6 @@ const Select = React.forwardRef(({
   const selectRef = React.useRef(null)
   const triggerRef = ref || selectRef
 
-  // Allow both controlled and uncontrolled open state
   const openState = controlledOpen !== undefined ? controlledOpen : isOpen
 
   const handleToggle = () => {
@@ -26,7 +25,6 @@ const Select = React.forwardRef(({
 
   const handleValueChange = (newValue) => {
     if (multiple) {
-      // Handle multiple selection logic
       const currentValues = Array.isArray(value) ? value : []
       const newValues = currentValues.includes(newValue)
         ? currentValues.filter(v => v !== newValue)

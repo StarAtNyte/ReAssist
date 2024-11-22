@@ -4,7 +4,7 @@ import { Card } from './ui/card';
 import { ScrollArea } from './ui/scroll-area';
 import { Button } from './ui/Button';
 import { Alert, AlertDescription } from './ui/alert';
-import { Tabs, TabsList, TabsTrigger } from './ui/tabs.tsx'; // Import from local tabs file
+import { Tabs, TabsList, TabsTrigger } from './ui/tabs.tsx'; 
 import PaperSelector from './PaperSelector';
 import AnalysisTools from './AnalysisTools';
 
@@ -14,7 +14,7 @@ const ChatSidebar = ({ papers }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedPaper, setSelectedPaper] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [mode, setMode] = useState('chat'); // 'chat' or 'paper'
+  const [mode, setMode] = useState('chat');
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -118,7 +118,7 @@ const ChatSidebar = ({ papers }) => {
 
   const handleModeChange = (newMode) => {
     setMode(newMode);
-    setMessages([]); // Clear messages when switching modes
+    setMessages([]); 
     if (newMode === 'chat') {
       setSelectedPaper(null);
     }

@@ -25,14 +25,11 @@ class PaperAnalyzer:
         :return: Detailed analysis response
         """
         try:
-            # Validate analysis mode
             if analysis_mode not in self.analysis_strategies:
                 raise ValueError(f"Unsupported analysis mode: {analysis_mode}")
 
-            # Fetch analysis strategy
             analysis_method = self.analysis_strategies[analysis_mode]
             
-            # Generate analysis
             return await analysis_method(papers)
         
         except Exception as e:
@@ -42,12 +39,10 @@ class PaperAnalyzer:
         """
         Generate forward-looking, strategic research intelligence
         """
-        # Extract key metadata to inform predictive analysis
         publication_years = [p.get('publication_date', '').split('-')[0] for p in papers if p.get('publication_date')]
         venues = [p.get('venue', 'Unknown') for p in papers]
         citation_counts = [p.get('citations', 0) for p in papers]
         
-        # Identify research domains from paper titles and venues
         domains = set()
         for paper in papers:
             title_words = paper.get('title', '').lower().split()
@@ -55,7 +50,6 @@ class PaperAnalyzer:
             domains.update([word for word in title_words if len(word) > 3])
             domains.add(venue)
         
-        # Create a comprehensive prompt for predictive insights
         prompt = f"""
         Advanced Predictive Research Intelligence Analysis
 
@@ -119,14 +113,11 @@ class PaperAnalyzer:
         :return: Detailed analysis response
         """
         try:
-            # Validate analysis mode
             if analysis_mode not in self.analysis_strategies:
                 raise ValueError(f"Unsupported analysis mode: {analysis_mode}")
 
-            # Fetch analysis strategy
             analysis_method = self.analysis_strategies[analysis_mode]
             
-            # Generate analysis
             return await analysis_method(papers)
         
         except Exception as e:
@@ -265,7 +256,6 @@ class PaperAnalyzer:
         :return: Detailed analysis response
         """
         try:
-            # Construct a comprehensive context using available paper details
             paper_context = f"""
             Paper Details:
             - Title: {paper.get('title', 'N/A')}
@@ -280,7 +270,6 @@ class PaperAnalyzer:
             - DOI: {paper.get('doi', 'N/A')}
             """
             
-            # Combine paper context with the specific analysis prompt
             full_prompt = f"{paper_context}\n\nAnalysis Task:\n{prompt}"
             
             response = await asyncio.to_thread(

@@ -1,11 +1,11 @@
-// App.jsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Button } from './components/ui/Button';
 import SearchBar from './components/Search/SearchBar';
 import ErrorAlert from './components/ErrorAlert/ErrorAlert';
 import ChatSidebar from './components/ChatSidebar';
-import { MessageSquare, BookOpen, TrendingUp, ChevronRight } from 'lucide-react';
+import SemanticNetworkVisualization from './components/SemanticNetworkVisualization'; 
+import { MessageSquare, BookOpen, TrendingUp, ChevronRight, Share2 } from 'lucide-react';
 import PredictiveResearchIntelligence from './components/PredictiveResearchIntelligence';
 import PaperRecommendations from './components/PaperRecommendations';
 import ResearchInsights from './components/ResearchInsights';
@@ -22,6 +22,8 @@ function App() {
   const [isChatExpanded, setIsChatExpanded] = useState(false);
   const [insights, setInsights] = useState(null);
   const [isLoadingInsights, setIsLoadingInsights] = useState(false);
+  
+  const [showSemanticNetwork, setShowSemanticNetwork] = useState(false);
 
   const toggleChat = () => {
     setIsChatOpen((prev) => !prev);
@@ -109,7 +111,6 @@ function App() {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      {/* Main Content */}
       <main 
         className={`flex-1 p-6 transition-all duration-300 ease-in-out ${
           isChatOpen ? (isChatExpanded ? 'mr-[600px]' : 'mr-[320px]') : 'mr-0'
@@ -187,7 +188,17 @@ function App() {
           >
             Predictive Intelligence
           </button>
-          
+          <button
+            className={`px-4 py-2 rounded-lg transition-colors flex items-center ${
+              activeTab === 'semantic-network' 
+                ? 'bg-blue-500 text-white' 
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+            onClick={() => setActiveTab('semantic-network')}
+          >
+            <Share2 className="mr-2 h-4 w-4" />
+            Semantic Network
+          </button>
         </div>
 
         {activeTab === 'papers' && (
@@ -206,14 +217,24 @@ function App() {
           />
         )}
 
-
         {activeTab === 'predictive' && (
           <PredictiveResearchIntelligence 
             papers={papers} 
             query={query}
           />
         )}
-        
+
+        {activeTab === 'semantic-network' && (
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <div className="flex items-center mb-4">
+              <Share2 className="mr-2 h-6 w-6 text-blue-500" />
+              <h2 className="text-2xl font-bold text-gray-800">
+                Semantic Network Visualization
+              </h2>
+            </div>
+            <SemanticNetworkVisualization papers={papers} />
+          </div>
+        )}
       </main>
 
       {/* Chat Sidebar */}

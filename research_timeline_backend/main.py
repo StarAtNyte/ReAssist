@@ -1,7 +1,6 @@
-#main.py
 from fastapi import FastAPI, Query, HTTPException, WebSocket, WebSocketDisconnect
-from pydantic import BaseModel
-from typing import List, Optional, Dict, Any
+from pydantic import BaseModel,Field
+from typing import List, Optional, Dict, Any,Union
 import os
 import openai
 from models import TimelineResponse, Paper, Message, ChatRequest, ChatResponse,ResearchQuery, WebSocketMessage
@@ -10,15 +9,28 @@ from api_wrappers import get_paper_recommendations, fetch_paper_details,PaperRec
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from paper_analyzer import ReviewPaperAnalyzer
+from semantic_network_visualizer import SemanticNetworkVisualizer
+import logging
+import traceback
 
 load_dotenv()
 
 app = FastAPI(title="ReAssist")
 
-# Set up CORS
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+class PaperModel(BaseModel):
+    title: str = Field(..., description="Title of the research paper")
+    abstract: Optional[str] = Field(default="", description="Abstract of the paper")
+    id: Optional[str] = Field(default=None, description="Unique identifier for the paper")
+
+class PapersRequest(BaseModel):
+    papers: List[Union[PaperModel, Dict[str, Any]]]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -28,12 +40,32 @@ client = openai.OpenAI(
     api_key=os.environ.get("SAMBANOVA_API_KEY"),
     base_url="https://api.sambanova.ai/v1",
 )
+
+def normalize_papers(papers: List[Union[PaperModel, Dict[str, Any]]]) -> List[Dict[str, Any]]:
+    """
+    Normalize papers input to ensure consistent dictionary format
+    """
+    normalized_papers = []
+    for paper in papers:
+        if isinstance(paper, dict):
+            normalized_paper = {
+                'title': paper.get('title', 'Untitled'),
+                'abstract': paper.get('abstract', ''),
+                'id': paper.get('id', str(hash(paper.get('title', ''))))
+            }
+        elif isinstance(paper, PaperModel):
+            normalized_paper = paper.dict()
+        else:
+            logger.warning(f"Skipping invalid paper format: {paper}")
+            continue
+        
+        normalized_papers.append(normalized_paper)
     
-# Chat route
+    return normalized_papers
+
 @app.post("/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
     try:
-        # Check if the request includes context for paper analysis
         context = request.context if request.context else None
         
         if context and 'papers' in context and 'analysisMode' in context:
@@ -45,7 +77,6 @@ async def chat(request: ChatRequest):
             )
             return ChatResponse(response=analysis_result)
         
-        # Regular chat completion
         formatted_messages = [
             {"role": "system", "content": "You are a helpful research assistant that provides detailed responses."}
         ] + [{"role": msg.role, "content": msg.content} for msg in request.messages]
@@ -99,7 +130,6 @@ async def websocket_research_updates(websocket: WebSocket):
             data = await websocket.receive_json()
             query = ResearchQuery(**data)
             
-            # Simulate incremental updates
             await websocket.send_json({
                 "type": "research_started",
                 "message": f"Starting research on {query.topic}"
@@ -117,3 +147,101 @@ async def websocket_research_updates(websocket: WebSocket):
 
 
 
+semantic_visualizer = SemanticNetworkVisualizer()
+
+class PapersRequest(BaseModel):
+    papers: List[Dict[str, Any]]
+
+@app.post("/semantic-network/graph")
+async def generate_semantic_graph(request: PapersRequest):
+    try:
+        papers = normalize_papers(request.papers)
+        
+        if not papers:
+            raise HTTPException(status_code=400, detail="No valid papers provided")
+        
+        visualizer = SemanticNetworkVisualizer()
+        
+        graph = visualizer.build_knowledge_graph(papers)
+        
+        graph_data = {
+            "nodes": [{"id": node, "label": node} for node in graph.nodes()],
+            "edges": [
+                {
+                    "from": edge[0], 
+                    "to": edge[1], 
+                    "label": graph.edges[edge].get('type', 'related')
+                } 
+                for edge in graph.edges()
+            ]
+        }
+        
+        return graph_data
+    
+    except Exception as e:
+        logger.error(f"Graph generation error: {e}")
+        logger.error(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=f"Graph generation failed: {str(e)}")
+
+@app.post("/semantic-network/connections")
+async def generate_semantic_connections(request: PapersRequest):
+    try:
+        papers = normalize_papers(request.papers)
+        
+        if not papers:
+            raise HTTPException(status_code=400, detail="No valid papers provided")
+        
+        visualizer = SemanticNetworkVisualizer()
+        
+        connections = visualizer.extract_semantic_connections(papers)
+        
+        return {
+            "connections": connections.get('connections', []),
+            "error": connections.get('error', None)
+        }
+    
+    except Exception as e:
+        logger.error(f"Connections generation error: {e}")
+        logger.error(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=f"Connections generation failed: {str(e)}")
+
+@app.post("/semantic-network/contradictions")
+async def generate_contradictions(request: PapersRequest):
+    try:
+        papers = normalize_papers(request.papers)
+        
+        if not papers:
+            raise HTTPException(status_code=400, detail="No valid papers provided")
+        
+        visualizer = SemanticNetworkVisualizer()
+        
+        contradictions = visualizer.identify_contradictions(papers)
+        
+        return {"contradictions": contradictions}
+    
+    except Exception as e:
+        logger.error(f"Contradictions generation error: {e}")
+        logger.error(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=f"Contradictions generation failed: {str(e)}")
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request, exc):
+    logger.error(f"Unexpected error: {exc}")
+    logger.error(traceback.format_exc())
+    return {"error": str(exc)}
+
+@app.post("/semantic-network/visualize")
+async def visualize_network(request: PapersRequest):
+    """
+    Generate a visualization of the semantic network
+    """
+    try:
+        semantic_visualizer.build_knowledge_graph(request.papers)
+        visualization_path = semantic_visualizer.visualize_knowledge_graph()
+        
+        return {
+            "visualization_path": visualization_path,
+            "message": "Visualization generated successfully"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

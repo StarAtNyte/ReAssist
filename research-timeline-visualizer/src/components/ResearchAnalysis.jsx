@@ -1,4 +1,3 @@
-//ResearchAnalysis.jsx
 import React, { useState } from 'react';
 import ResearchTimelineVisualization from './ResearchTimelineVisualization';
 import ChatSidebar from './ChatSidebar';
@@ -20,7 +19,6 @@ const ResearchAnalysis = () => {
       const data = await response.json();
       setPapers(data.timeline);
       setSearchQuery(query);
-      // Reset selection when new search is performed
       setSelectedPaper(null);
     } catch (error) {
       console.error('Error fetching timeline:', error);

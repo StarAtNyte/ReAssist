@@ -1,4 +1,3 @@
-#api_wrappers.py
 import os
 import openai
 import requests
@@ -63,12 +62,11 @@ def fetch_paper_details(paper_titles: List[str]) -> List[Paper]:
                 "limit": 1
             }
             response = requests.get(SEMANTIC_SCHOLAR_API_URL, params=params)
-            response.raise_for_status()  # Raise an exception for bad status codes
+            response.raise_for_status()  
             
             data = response.json()
             if data.get("data") and len(data["data"]) > 0:
                 result = data["data"][0]
-                # Ensure all fields have default values if they're missing
                 fallback_url = f"https://www.semanticscholar.org/search?q={title.replace(' ', '+')}",
                 papers.append(Paper(
                     title=result.get("title", "Unknown Title"),
@@ -78,7 +76,6 @@ def fetch_paper_details(paper_titles: List[str]) -> List[Paper]:
                     link=result.get("url", fallback_url)
                 ))
             else:
-                # Handle case where no results were found
                 papers.append(Paper(
                     title=title,
                     authors=["Author not found"],
@@ -88,7 +85,6 @@ def fetch_paper_details(paper_titles: List[str]) -> List[Paper]:
                 ))
 
         except requests.RequestException as e:
-            # Handle API request errors
             print(f"Error fetching details for paper '{title}': {str(e)}")
             papers.append(Paper(
                 title=title,
@@ -171,8 +167,7 @@ class PaperRecommendationService:
         citations = paper_data.get("citationCount", 0)
         recency = datetime.now().year - paper_data.get("year", datetime.now().year)
         
-        # Basic relevance scoring algorithm
-        base_score = min(citations / 100, 1.0)  # Normalize citations
-        recency_factor = max(1 - (recency / 10), 0.1)  # Penalize older papers
+        base_score = min(citations / 100, 1.0) 
+        recency_factor = max(1 - (recency / 10), 0.1) 
         
         return base_score * recency_factor * 100

@@ -12,3 +12,4 @@ numpy
 python-louvain 
 community
 scipy
+matplotlib

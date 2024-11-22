@@ -1,4 +1,3 @@
-// components/ui/input.jsx
 import * as React from "react"
 
 const Input = React.forwardRef(({ className = "", type = "text", ...props }, ref) => {

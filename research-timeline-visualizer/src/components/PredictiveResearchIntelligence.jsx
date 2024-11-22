@@ -16,24 +16,20 @@ const PredictiveResearchIntelligence = ({ papers, query }) => {
   const [error, setError] = useState(null);
   const [retryCount, setRetryCount] = useState(0);
 
-  // Create a stable reference for the current papers and query
   const paperContextKey = useMemo(() => 
     papers?.map(p => p.title).join('|') + '|' + query, 
     [papers, query]
   );
 
   const generatePredictiveInsights = useCallback(async () => {
-    // Reset state before new generation
     setInsights(null);
     setError(null);
 
-    // Validate inputs
     if (!papers || papers.length === 0 || !query) {
       setError('Insufficient data for generating insights');
       return;
     }
 
-    // Check local storage first to avoid regenerating
     const storedInsights = localStorage.getItem(paperContextKey);
     if (storedInsights) {
       setInsights(storedInsights);
@@ -102,23 +98,20 @@ Advanced Analysis Objectives:
       if (response.data && response.data.response) {
         const generatedInsights = response.data.response;
         
-        // Store insights in local storage
         localStorage.setItem(paperContextKey, generatedInsights);
         
         setInsights(generatedInsights);
-        setRetryCount(0); // Reset retry count on successful generation
+        setRetryCount(0);
       } else {
         throw new Error('Invalid response from server');
       }
     } catch (err) {
       console.error('Insight generation error:', err);
       
-      // Implement retry mechanism
       if (retryCount < 2) {
         setError(`Generation attempt failed. Retrying... (${retryCount + 1}/3)`);
         setRetryCount(prev => prev + 1);
         
-        // Delay before retry
         setTimeout(generatePredictiveInsights, 2000);
       } else {
         setError(
@@ -133,7 +126,6 @@ Advanced Analysis Objectives:
   }, [papers, query, paperContextKey, retryCount]);
 
   useEffect(() => {
-    // Only generate insights if not already in local storage
     const storedInsights = localStorage.getItem(paperContextKey);
     if (!storedInsights) {
       generatePredictiveInsights();
@@ -142,7 +134,6 @@ Advanced Analysis Objectives:
     }
   }, [paperContextKey, generatePredictiveInsights]);
   
-  // Render methods
   const renderNoDataState = () => (
     <div className="p-6 bg-gray-50 rounded-lg text-center">
       <FileQuestion className="mx-auto h-12 w-12 text-gray-400 mb-4" />
@@ -213,7 +204,6 @@ Advanced Analysis Objectives:
     </div>
   );
 
-  // Main render logic
   if (!papers || papers.length === 0 || !query) {
     return renderNoDataState();
   }

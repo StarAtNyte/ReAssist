@@ -1,4 +1,3 @@
-// PaperRecommendations.jsx
 import React from 'react';
 
 const PaperRecommendations = ({ papers, isLoading }) => {
