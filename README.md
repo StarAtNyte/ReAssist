@@ -2,7 +2,7 @@
 
 ReAssist is an advanced research assistant platform that helps researchers explore academic papers, analyze research trends, and discover semantic connections between studies. It combines powerful paper recommendations with interactive visualizations and real-time research insights.
 
-![ReAssist Logo](https://via.placeholder.com/600x200?text=ReAssist+Research+Intelligence+Companion)
+![image](https://github.com/user-attachments/assets/a0473baa-8c42-4b93-b899-5eac134e179f)
 
 ## Features
 
@@ -41,27 +41,31 @@ ReAssist is an advanced research assistant platform that helps researchers explo
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/reassist.git
+git clone https://github.com/StarAtNyte/reassist.git
 cd reassist
 ```
 
 2. Set up the backend:
 ```bash
+
+# Create .env file
+# Add your SAMBANOVA_API_KEY to .env
+
 # Create and activate virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: .\venv\Scripts\activate
+python -m venv reassist
+source reassist/bin/activate  # On Windows: .\venv\Scripts\activate
+
+#cd to backend folder
+cd reassist_backend
 
 # Install dependencies
 pip install -r requirements.txt
 
-# Create .env file
-cp .env.example .env
-# Add your SAMBANOVA_API_KEY to .env
 ```
 
 3. Set up the frontend:
 ```bash
-cd frontend
+cd reassist_frontend
 npm install
 ```
 
@@ -69,14 +73,13 @@ npm install
 
 1. Start the backend server:
 ```bash
-uvicorn main:app --reload
+uvicorn main:app --host 127.0.0.1 --port 8000 --reload
 ```
 
 2. Start the frontend development server:
 ```bash
-npm run dev
+npm start
 ```
-
 The application will be available at `http://localhost:3000`
 
 ## API Endpoints
@@ -86,33 +89,19 @@ The application will be available at `http://localhost:3000`
 - `POST /research/analyze`: Get comprehensive research analysis
 - `WS /research/updates`: WebSocket endpoint for real-time updates
 
+### Chat Endpoint
+- `POST /chat`: Interactive chat with research assistant
+
 ### Semantic Network Endpoints
 - `POST /semantic-network/graph`: Generate semantic network graph
 - `POST /semantic-network/connections`: Extract semantic connections
 - `POST /semantic-network/contradictions`: Identify contradictions
 - `POST /semantic-network/visualize`: Generate network visualization
 
-### Chat Endpoint
-- `POST /chat`: Interactive chat with research assistant
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
 ## Acknowledgments
 
 - Built with SambaNova's AI API
-- Uses Meta's Llama 3.1 405B model
+- Uses Meta's Llama 3.1 405B, Llama-3.2-11B-Vision-Instruct, and Llama-3.2-90B-Vision-Instruct model
 - Shadcn/ui for component library
 
-## Support
 
-For support, please open an issue in the GitHub repository or contact the maintenance team.
