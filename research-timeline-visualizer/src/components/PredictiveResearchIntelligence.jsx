@@ -8,6 +8,7 @@ import {
   AlertTriangle, 
   RefreshCw 
 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 
 const PredictiveResearchIntelligence = ({ papers, query }) => {
   const [insights, setInsights] = useState(null);
@@ -140,6 +141,7 @@ Advanced Analysis Objectives:
       setInsights(storedInsights);
     }
   }, [paperContextKey, generatePredictiveInsights]);
+  
   // Render methods
   const renderNoDataState = () => (
     <div className="p-6 bg-gray-50 rounded-lg text-center">
@@ -192,7 +194,21 @@ Advanced Analysis Objectives:
           <Globe className="h-5 w-5 text-blue-600 mr-2" />
           <h3 className="font-semibold text-blue-800">Predictive Research Insights</h3>
         </div>
-        <p className="text-gray-700 whitespace-pre-wrap">{insights}</p>
+        <ReactMarkdown 
+          components={{
+            h2: ({node, ...props}) => <h2 className="text-xl font-semibold mb-2 text-blue-700" {...props} />,
+            h3: ({node, ...props}) => <h3 className="text-lg font-medium mb-1 text-blue-600" {...props} />,
+            strong: ({node, ...props}) => <strong className="font-bold text-blue-800" {...props} />,
+            p: ({node, ...props}) => <p className="mb-2 text-gray-700" {...props} />,
+            ol: ({node, ...props}) => <ol className="list-decimal pl-6 mb-2" {...props} />,
+            ul: ({node, ...props}) => <ul className="list-disc pl-6 mb-2" {...props} />,
+            li: ({node, ...props}) => <li className="mb-1" {...props} />,
+            a: ({node, ...props}) => <a className="text-blue-500 hover:underline" {...props} />
+          }}
+          className="prose max-w-none"
+        >
+          {insights}
+        </ReactMarkdown>
       </div>
     </div>
   );

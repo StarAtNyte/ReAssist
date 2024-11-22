@@ -41,15 +41,6 @@ const PaperCard = ({ paper, isLeft }) => (
             </span>
           </div>
         )}
-        
-        {paper.citations !== undefined && (
-          <div className="flex items-center gap-3">
-            <BookOpen size={18} className="text-purple-500" />
-            <span className="inline-flex items-center bg-purple-50 text-purple-700 px-3 py-1 rounded-full font-semibold">
-              {paper.citations} Citations
-            </span>
-          </div>
-        )}
       </div>
     </div>
   </div>

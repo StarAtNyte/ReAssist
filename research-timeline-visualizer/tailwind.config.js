@@ -16,9 +16,34 @@ module.exports = {
       },
     },
     extend: {
-      
+      animation: {
+        'in': 'fade-in-0 zoom-in-95',
+        'out': 'fade-out-0 zoom-out-95',
+      },
+      keyframes: {
+        'fade-in-0': {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' }
+        },
+        'fade-out-0': {
+          '0%': { opacity: '1' },
+          '100%': { opacity: '0' }
+        },
+        'zoom-in-95': {
+          '0%': { transform: 'scale(0.95)' },
+          '100%': { transform: 'scale(1)' }
+        },
+        'zoom-out-95': {
+          '0%': { transform: 'scale(1)' },
+          '100%': { transform: 'scale(0.95)' }
+        }
+      },
       colors: {
         border: "hsl(var(--border))",
+        primary: "hsl(var(--primary))",
+        secondary: "hsl(var(--secondary))",
+        background: "hsl(var(--background))",
+        ring: "hsl(var(--ring))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
@@ -93,8 +118,11 @@ module.exports = {
         "fade-in-down": "fade-in-down 0.3s ease-out",
         "fade-in-up": "fade-in-up 0.3s ease-out",
         "animate-in": "animate-in 0.2s ease-out",
-        "scrollbar": "scrollbar 0.3s ease-in-out"
+        "scrollbar": "scrollbar 0.3s ease-in-out",
+        'in': 'fade-in-0 zoom-in-95',
+        'out': 'fade-out-0 zoom-out-95',
       },
+      
       scrollbar: {
         DEFAULT: {
           width: '8px',

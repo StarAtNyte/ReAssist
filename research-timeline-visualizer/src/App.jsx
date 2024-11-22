@@ -1,38 +1,27 @@
-//App.jsx
+// App.jsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Button } from './components/ui/Button';
 import SearchBar from './components/Search/SearchBar';
-import ResearchTimelineVisualization from './components/ResearchTimelineVisualization';
 import ErrorAlert from './components/ErrorAlert/ErrorAlert';
-import Sidebar from './components/Sidebar';
 import ChatSidebar from './components/ChatSidebar';
 import { MessageSquare, BookOpen, TrendingUp, ChevronRight } from 'lucide-react';
 import PredictiveResearchIntelligence from './components/PredictiveResearchIntelligence';
+import PaperRecommendations from './components/PaperRecommendations';
+import ResearchInsights from './components/ResearchInsights';
 
 function App() {
   const [query, setQuery] = useState('');
-  const [activeTab, setActiveTab] = useState('timeline'); 
+  const [activeTab, setActiveTab] = useState('papers');
   const [papers, setPapers] = useState([]);
-  const [filteredPapers, setFilteredPapers] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
   const [totalResults, setTotalResults] = useState(0);
   const [lastSuccessfulSearch, setLastSuccessfulSearch] = useState('');
-  const [filters, setFilters] = useState({
-    startDate: '',
-    endDate: '',
-    author: '',
-    journal: '',
-    keywords: '',
-    citationCount: '',
-  });
-  const [sortBy, setSortBy] = useState('');
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isChatOpen, setIsChatOpen] = useState(true);
   const [isChatExpanded, setIsChatExpanded] = useState(false);
-  const [showInsights, setShowInsights] = useState(false);
+  const [insights, setInsights] = useState(null);
+  const [isLoadingInsights, setIsLoadingInsights] = useState(false);
 
   const toggleChat = () => {
     setIsChatOpen((prev) => !prev);
@@ -45,89 +34,25 @@ function App() {
     setIsChatExpanded((prev) => !prev);
   };
 
-  // Function to apply filters to the papers list
-  const applyFilters = (papers, filters) => {
-    return papers.filter((paper) => {
-      const matchesStartDate = filters.startDate
-        ? new Date(paper.publication_date).getFullYear() >= parseInt(filters.startDate)
-        : true;
-      const matchesEndDate = filters.endDate
-        ? new Date(paper.publication_date).getFullYear() <= parseInt(filters.endDate)
-        : true;
-      const matchesAuthor = filters.author
-        ? paper.authors?.some((author) =>
-            author.toLowerCase().includes(filters.author.toLowerCase())
-          )
-        : true;
-      const matchesJournal = filters.journal
-        ? paper.journal?.toLowerCase().includes(filters.journal.toLowerCase())
-        : true;
-      const matchesKeywords = filters.keywords
-        ? paper.keywords?.some((keyword) =>
-            keyword.toLowerCase().includes(filters.keywords.toLowerCase())
-          )
-        : true;
-      const matchesCitationCount = filters.citationCount
-        ? paper.citations >= parseInt(filters.citationCount)
-        : true;
+  // Fetch research insights
+  const fetchInsights = async (searchQuery) => {
+    if (!searchQuery) return;
 
-      return (
-        matchesStartDate &&
-        matchesEndDate &&
-        matchesAuthor &&
-        matchesJournal &&
-        matchesKeywords &&
-        matchesCitationCount
-      );
-    });
-  };
-
-  // Function to sort the papers based on the selected criteria
-  const sortPapers = (papers, sortBy) => {
-    switch (sortBy) {
-      case 'publication_date':
-        return [...papers].sort((a, b) => new Date(b.publication_date) - new Date(a.publication_date));
-      case 'citations':
-        return [...papers].sort((a, b) => b.citations - a.citations);
-      case 'relevance':
-        return [...papers].sort((a, b) => {
-          const queryWords = query.toLowerCase().split(' ');
-          const aRelevance = queryWords.reduce((sum, word) => {
-            const titleMatch = a.title.toLowerCase().includes(word) ? 1 : 0;
-            const authorMatch = a.authors?.some((author) =>
-              author.toLowerCase().includes(word)
-            )
-              ? 1
-              : 0;
-            const keywordMatch = a.keywords?.some((keyword) =>
-              keyword.toLowerCase().includes(word)
-            )
-              ? 1
-              : 0;
-            return sum + titleMatch + authorMatch + keywordMatch;
-          }, 0);
-          const bRelevance = queryWords.reduce((sum, word) => {
-            const titleMatch = b.title.toLowerCase().includes(word) ? 1 : 0;
-            const authorMatch = b.authors?.some((author) =>
-              author.toLowerCase().includes(word)
-            )
-              ? 1
-              : 0;
-            const keywordMatch = b.keywords?.some((keyword) =>
-              keyword.toLowerCase().includes(word)
-            )
-              ? 1
-              : 0;
-            return sum + titleMatch + authorMatch + keywordMatch;
-          }, 0);
-          return bRelevance - aRelevance;
-        });
-      default:
-        return papers;
+    setIsLoadingInsights(true);
+    try {
+      const response = await axios.post('http://localhost:8000/research/analyze', {
+        topic: searchQuery,
+        research_depth: 'comprehensive'
+      });
+      setInsights(response.data);
+    } catch (error) {
+      console.error('Error fetching insights:', error);
+    } finally {
+      setIsLoadingInsights(false);
     }
   };
 
-  // Fetch timeline data from the API
+  // Fetch recommended papers
   const handleSearch = async () => {
     if (!query.trim()) {
       setError('Please enter a search query');
@@ -138,35 +63,40 @@ function App() {
     setError(null);
 
     try {
-      const response = await axios.get(
-        `http://127.0.0.1:8000/timeline?query=${encodeURIComponent(query)}&page=${currentPage}&page_size=100`,
+      const response = await axios.post(
+        'http://localhost:8000/research/recommend',
+        {
+          topic: query,
+          research_depth: 'comprehensive'
+        },
         { timeout: 1000000 }
       );
 
-      if (!response.data || !response.data.timeline) {
+      if (!response.data || !response.data.papers) {
         setError('Invalid response format from server');
         setPapers([]);
         return;
       }
-      
-      const processedPapers = response.data.timeline.map((paper, index) => ({
+
+      const processedPapers = response.data.papers.map((paper, index) => ({
         ...paper,
-        isQueried: index === 0  // Mark first paper as most relevant
+        isQueried: index === 0
       }));
 
       setPapers(processedPapers);
-      setTotalResults(response.data.total_results);
+      setTotalResults(processedPapers.length);
       setLastSuccessfulSearch(query);
- 
+      
+      // Fetch insights after successful paper search
+      fetchInsights(query);
     } catch (err) {
       let errorMessage = 'An error occurred while searching';
       if (err.code === 'ECONNABORTED') {
         errorMessage = 'Search request timed out. Please try again.';
       } else if (err.response) {
-        errorMessage =
-          err.response.status === 404
-            ? 'Search service not found. Please check if the server is running.'
-            : `Server error: ${err.response.status}`;
+        errorMessage = err.response.status === 404
+          ? 'Search service not found. Please check if the server is running.'
+          : `Server error: ${err.response.status}`;
       } else if (err.request) {
         errorMessage = 'Unable to reach the search server. Please check your connection.';
       }
@@ -176,12 +106,6 @@ function App() {
       setIsLoading(false);
     }
   };
-
-  useEffect(() => {
-    const filtered = applyFilters(papers, filters);
-    const sorted = sortPapers(filtered, sortBy);
-    setFilteredPapers(sorted);
-  }, [filters, papers, sortBy]);
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -235,13 +159,23 @@ function App() {
         <div className="flex space-x-4 mb-4">
           <button
             className={`px-4 py-2 rounded-lg transition-colors ${
-              activeTab === 'timeline' 
+              activeTab === 'papers' 
                 ? 'bg-blue-500 text-white' 
                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
             }`}
-            onClick={() => setActiveTab('timeline')}
+            onClick={() => setActiveTab('papers')}
           >
-            Research Timeline
+            Paper Recommendations
+          </button>
+          <button
+            className={`px-4 py-2 rounded-lg transition-colors ${
+              activeTab === 'insights' 
+                ? 'bg-blue-500 text-white' 
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+            onClick={() => setActiveTab('insights')}
+          >
+            Research Insights
           </button>
           <button
             className={`px-4 py-2 rounded-lg transition-colors ${
@@ -251,32 +185,35 @@ function App() {
             }`}
             onClick={() => setActiveTab('predictive')}
           >
-            Predictive Research Intelligence
+            Predictive Intelligence
           </button>
+          
         </div>
 
-        {/* Conditional Rendering Based on Active Tab */}
-        {activeTab === 'timeline' && filteredPapers.length > 0 && (
-          <>
-            <hr className="my-4 border-t border-gray-300" />
-            <ResearchTimelineVisualization 
-              papers={filteredPapers} 
-              searchQuery={query}
-            />
-          </>
-        )}
-        {activeTab === 'predictive' && (
-          <PredictiveResearchIntelligence 
-          papers={filteredPapers} 
-          query={query}
-        />
+        {activeTab === 'papers' && (
+          <PaperRecommendations 
+            papers={papers}
+            isLoading={isLoading}
+          />
         )}
 
-        {totalResults > 0 && (
-          <div className="mt-6 text-center">
-            <p>{`Showing ${filteredPapers.length} of ${totalResults} results`}</p>
-          </div>
+        {activeTab === 'insights' && (
+          <ResearchInsights 
+            query={query}
+            papers={papers}
+            insights={insights}
+            isLoading={isLoadingInsights}
+          />
         )}
+
+
+        {activeTab === 'predictive' && (
+          <PredictiveResearchIntelligence 
+            papers={papers} 
+            query={query}
+          />
+        )}
+        
       </main>
 
       {/* Chat Sidebar */}
@@ -300,7 +237,7 @@ function App() {
             className="h-full cursor-pointer" 
             onClick={!isChatExpanded ? toggleChatExpanded : undefined}
           >
-            <ChatSidebar papers={filteredPapers} />
+            <ChatSidebar papers={papers} />
           </div>
         </div>
       </aside>

@@ -5,3 +5,10 @@ openai
 semanticscholar
 crossrefapi
 python-dotenv
+pydantic
+scikit-learn
+networkx
+numpy
+python-louvain 
+community
+scipy

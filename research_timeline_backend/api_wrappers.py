@@ -3,10 +3,11 @@ import os
 import openai
 import requests
 import re
-from typing import List
-from models import Paper
+from typing import List,Dict
+from models import Paper,ResearchQuery
 import getpass
 from dotenv import load_dotenv
+from datetime import datetime
 
 load_dotenv()
 
@@ -85,6 +86,7 @@ def fetch_paper_details(paper_titles: List[str]) -> List[Paper]:
                     publication_date="Year unknown",
                     link=""
                 ))
+
         except requests.RequestException as e:
             # Handle API request errors
             print(f"Error fetching details for paper '{title}': {str(e)}")
@@ -96,3 +98,81 @@ def fetch_paper_details(paper_titles: List[str]) -> List[Paper]:
                 link=""
             ))
     return papers
+
+class PaperRecommendationService:
+    def __init__(self, api_key: str = None):
+        self.client = openai.OpenAI(
+            api_key=os.environ.get("SAMBANOVA_API_KEY"),
+            base_url="https://api.sambanova.ai/v1",
+        )
+        self.semantic_scholar_url = "https://api.semanticscholar.org/graph/v1/paper/search"
+
+    def extract_titles(self, text: str) -> List[str]:
+        """Extract paper titles from AI-generated text"""
+        return re.findall(r'"([^"]*)"', text)
+
+    async def get_paper_recommendations(self, query: ResearchQuery) -> List[str]:
+        """Generate paper recommendations using Llama 3.2"""
+        prompt = f"""
+        Provide 20 foundational and cutting-edge research papers for the topic: {query.topic}
+        Research Depth: {query.research_depth}
+        Sub-domains: {', '.join(query.sub_domains) if query.sub_domains else 'Not specified'}
+
+        Guidelines:
+        - Include diverse perspectives
+        - Cover both classical and recent publications
+        - Prioritize high-impact and well-cited papers
+        
+        Format: Return titles in double quotes, one per line
+        """
+
+        response = self.client.chat.completions.create(
+            model="Llama-3.2-90B-Vision-Instruct",
+            messages=[
+                {"role": "system", "content": "You are an expert research paper recommender."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.3
+        )
+
+        return self.extract_titles(response.choices[0].message.content)
+
+    def fetch_paper_details(self, titles: List[str]) -> List[Paper]:
+        """Fetch detailed information about recommended papers"""
+        papers = []
+        for title in titles:
+            try:
+                params = {
+                    "query": title,
+                    "fields": "title,authors,abstract,year,url,citationCount",
+                    "limit": 1
+                }
+                response = requests.get(self.semantic_scholar_url, params=params)
+                data = response.json()
+
+                if data.get("data") and data["data"]:
+                    paper_data = data["data"][0]
+                    papers.append(Paper(
+                        title=paper_data.get("title", title),
+                        authors=[author.get("name", "Unknown") for author in paper_data.get("authors", [])],
+                        abstract=paper_data.get("abstract", "No abstract available"),
+                        publication_date=str(paper_data.get("year", "Unknown")),
+                        link=paper_data.get("url", ""),
+                        citations=paper_data.get("citationCount", 0),
+                        relevance_score=self._calculate_relevance_score(paper_data)
+                    ))
+            except Exception as e:
+                print(f"Error fetching paper details: {e}")
+
+        return sorted(papers, key=lambda x: x.relevance_score, reverse=True)
+
+    def _calculate_relevance_score(self, paper_data: Dict) -> float:
+        """Calculate paper relevance based on multiple factors"""
+        citations = paper_data.get("citationCount", 0)
+        recency = datetime.now().year - paper_data.get("year", datetime.now().year)
+        
+        # Basic relevance scoring algorithm
+        base_score = min(citations / 100, 1.0)  # Normalize citations
+        recency_factor = max(1 - (recency / 10), 0.1)  # Penalize older papers
+        
+        return base_score * recency_factor * 100
