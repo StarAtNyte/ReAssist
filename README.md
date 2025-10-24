@@ -3,10 +3,8 @@
 ReAssist is an advanced research assistant platform that helps researchers explore academic papers, analyze research trends, and discover semantic connections between studies. It combines powerful paper recommendations with interactive visualizations and real-time research insights.
 
 ![image](https://github.com/user-attachments/assets/a0473baa-8c42-4b93-b899-5eac134e179f)
-
 ![1](https://github.com/user-attachments/assets/5e01ffc1-769a-4a92-a1a0-57b297be18a6)
 ![2](https://github.com/user-attachments/assets/6bfc0c30-7f1f-4586-89a6-556cbfdf1c26)
-
 ![3](https://github.com/user-attachments/assets/7adb94b8-a5b7-487e-94b9-a93c2ae01614)
 
 ## Demo
